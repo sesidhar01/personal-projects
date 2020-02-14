@@ -1,0 +1,164 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "",
+  "projects": {
+    "showcase": {
+      "root": "",
+      "sourceRoot": "showcase",
+      "projectType": "application",
+      "prefix": "app",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/showcase",
+            "index": "showcase/index.html",
+            "main": "showcase/main.ts",
+            "polyfills": "showcase/polyfills.ts",
+            "tsConfig": "showcase/tsconfig.app.json",
+            "assets": ["showcase/favicon.ico", "showcase/assets"],
+            "styles": [
+              "node_modules/primeicons/primeicons.css",
+              "showcase/styles.scss",
+              "node_modules/@pst/nitro-icons/nitroicons.css"
+            ],
+            "scripts": ["node_modules/clipboard/dist/clipboard.min.js", "node_modules/chart.js/dist/Chart.min.js"],
+            "es5BrowserSupport": true,
+            "stylePreprocessorOptions": {
+              "includePaths": ["./nitro/src"]
+            }
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "showcase/environments/environment.ts",
+                  "with": "showcase/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "5mb",
+                  "maximumError": "10mb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "showcase:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "showcase:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "showcase:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "showcase/test.ts",
+            "polyfills": "showcase/polyfills.ts",
+            "tsConfig": "showcase/tsconfig.spec.json",
+            "karmaConfig": "showcase/karma.conf.js",
+            "styles": ["showcase/styles.scss"],
+            "scripts": ["node_modules/clipboard/dist/clipboard.min.js"],
+            "assets": ["showcase/favicon.ico", "showcase/assets"],
+            "stylePreprocessorOptions": {
+              "includePaths": ["./nitro/src"]
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": ["showcase/tsconfig.app.json", "showcase/tsconfig.spec.json"],
+            "exclude": ["**/node_modules/**"]
+          }
+        }
+      }
+    },
+    "showcase-e2e": {
+      "root": "e2e/",
+      "projectType": "application",
+      "prefix": "",
+      "architect": {
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "e2e/protractor.conf.js",
+            "devServerTarget": "showcase:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "showcase:serve:production"
+            }
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": "e2e/tsconfig.e2e.json",
+            "exclude": ["**/node_modules/**"]
+          }
+        }
+      }
+    },
+    "nitro": {
+      "projectType": "library",
+      "root": "nitro",
+      "sourceRoot": "nitro/src",
+      "prefix": "nitro",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "assets": [{ "glob": "**/*.scss", "input": "src/", "ignore": [], "output": "/" }],
+          "options": {
+            "tsConfig": "nitro/tsconfig.lib.json",
+            "project": "nitro/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "nitro/src/test.ts",
+            "tsConfig": "nitro/tsconfig.spec.json",
+            "karmaConfig": "nitro/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": ["nitro/tsconfig.lib.json", "nitro/tsconfig.spec.json"],
+            "exclude": ["**/node_modules/**"]
+          }
+        }
+      }
+    }
+  },
+  "defaultProject": "showcase"
+}

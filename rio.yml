@@ -1,0 +1,95 @@
+schemaVersion: 2.0 # The latest rio.yml schema.
+# See: https://rio-docs.apple.com/docs/yaml_reference/schemav2.html for full
+# documentation on all the features and options you can configure below.
+
+timeout: 60
+
+machine:
+  # Default node version for non-buildozer builds
+  # Buildozer builds pick up node version from package.json engines property
+  docker:
+    baseImage: docker.apple.com/amp-ui/node-chrome:8
+
+  env:
+    # Configure verbose logging for build steps
+    VERBOSE: '--verbose'
+
+    # This is for testing purposes
+    DRYRUN: ''
+
+    ### Our CI script package, tied to major version.
+    ### We use npm to distribute our CI scripts
+    ### Non-breaking changes are mandatory updates for all jobs, but breaking changes need to be opted into at a per-project basis (i.e. @4)
+    CI_SCRIPT: '@amp/ci-amp-ui@4'
+
+    ### Configure AMP Deploy artifactory repository
+    CI_ARTIFACTORY_ROOT: 'amp-deploy-release-local'
+    CI_ARTIFACTORY_TARGETPATH: 'com/apple/amp/deploy'
+
+    ### Set AMP Deploy App ID to make links to AMP Deploy generated in releases use correct URL
+    AMP_DEPLOY_APP_ID: 'angular-tidbits'
+
+    ## Set config to @amp private virtual registry
+    ## See https://docs.npmjs.com/misc/config#environment-variables
+    NPM_CONFIG_REGISTRY: 'https://artifacts.apple.com/api/npm/npm-private/'
+    NPM_CONFIG_ALWAYS_AUTH: true
+    CHROME_BIN: '/usr/bin/google-chrome'
+
+# A list of pipeline specifications to define the jobs created for this project:
+pipelines:
+  - branchName: master # Runs any time a change is pushed to the master branch.
+    build:
+      # See https://docs.pie.apple.com/rio/build/templates/buildozer.html.
+      template: buildozer:v4:publish
+    machine:
+      env:
+        NPM_CACHE_CLEAN: true
+        NODE_FORCE_NPM_DEPENDENCIES: true
+        NODE_BOWER_NO_REGISTRY_OVERRIDE: true
+        RIO_FEATURE_NODE_V3: true
+        LOG_LEVEL: debug
+    package:
+      slug: true
+    deploy:
+      pieCompute: # configures the automated deployment to the PIE App Orchestrator.
+        # Update environment: and availabilityZones: match to the # environment
+        # key and availabilityZones you want to automatically deploy to:
+        target: app
+        deployFlow: auto
+        environmentName: prod # Your full environment key
+        appAttributes:
+          availabilityZones: # Specify the work unit
+            - usspk05
+
+  - branchName: develop # Runs any time a change is pushed to the master branch.
+    build:
+      # See https://docs.pie.apple.com/rio/build/templates/buildozer.html.
+      template: buildozer:v4:publish
+    package:
+      slug: true
+    deploy:
+      pieCompute: # configures the automated deployment to the PIE App Orchestrator.
+        # Update environment: and availabilityZones: match to the # environment
+        # key and availabilityZones you want to automatically deploy to:
+        target: app
+        deployFlow: auto
+        environmentName: dev # Your full environment key
+        appAttributes:
+          availabilityZones: # Specify the work unit
+            - usspk05
+  # The following spec configures a Pull Request Build for the master branch:
+  # - branchRules: # Runs any time a change is pushed to branch name starting with below conventions
+  #     whitelist:
+  #       - ((^bugfix/)(.*))
+  #       - ((^hotfix/)(.*))
+  #       - ((^feature/)(.*))
+  #       - ((^radar/)(.*))
+  #       - ((^rdar/)(.*))
+  #       - (^master)
+  #       - (^develop)
+  #   build:
+  #     # See https://docs.pie.apple.com/rio/build/templates/buildozer.html.
+  #     template: buildozer:v4:build
+  # The following spec configures a pipeline to build and unit test the project,
+  # then publish a deployable "slug" package for the application. This package
+  # is then deployed via the PIE Application Orchestrator.
